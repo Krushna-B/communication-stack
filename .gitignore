@@ -1,2 +1,6 @@
 #Build Files
 build
+.claude
+
+#Cache
+.cache

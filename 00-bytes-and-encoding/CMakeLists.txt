@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.23)
 
 project(00-bytes-and-encoding)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 #Executaboles
 add_executable(main main.cpp)
 
