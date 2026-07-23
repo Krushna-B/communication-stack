@@ -1,4 +1,5 @@
 #include "telemetry.hpp"
+#include <array>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -11,21 +12,20 @@ int main() {
 
   std::array<std::byte, MESSAGE_SIZE> buffer{};
 
-  write_uint32(buffer, 0, device_id);
-  write_uint32(buffer, 4, sequence_number);
-  write_uint32(buffer, 8, static_cast<std::uint32_t>(temp));
+  telemetry::write(buffer, 0, device_id);
+  telemetry::write(buffer, 4, sequence_number);
+  telemetry::write(buffer, 8, temp);
   print_buffer(buffer);
 
   // Stream buffer to binary file
   std::ofstream out("telemetry.bin", std::ios::binary);
   out.write(reinterpret_cast<const char *>(buffer.data()), buffer.size());
 
-  const std::uint32_t decoded_device_id = read_uint32(buffer, 0);
+  const std::uint32_t decoded_device_id = telemetry::read<std::uint32_t>(buffer, 0);
 
-  const std::uint32_t decoded_sequence = read_uint32(buffer, 4);
+  const std::uint32_t decoded_sequence = telemetry::read<std::uint32_t>(buffer, 4);
 
-  const std::int32_t decoded_temperature =
-      static_cast<std::int32_t>(read_uint32(buffer, 8));
+  const std::int32_t decoded_temperature = telemetry::read<std::int32_t>(buffer, 8);
 
   if (decoded_device_id != device_id || decoded_sequence != sequence_number ||
       decoded_temperature != temp) {

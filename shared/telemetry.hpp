@@ -1,22 +1,30 @@
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <span>
+#include <type_traits>
 
 constexpr std::size_t MESSAGE_SIZE = 12;
 
-/**
-@brief Writes a uint32_t into buffer at offset in big-endian order.
+namespace telemetry {
 
-@param buffer reference to the raw-byte buffer
-@param offset byte position where this field starts
-@param value uint32_t value to encode
+/**
+Utilizing span just points to values in the buffer
  */
-inline void write_uint32(std::array<std::byte, MESSAGE_SIZE> &buffer,
-                         std::size_t offset, std::uint32_t value) {
+
+/**
+@brief Writes an integer into buffer at offset in big-endian order.
+
+@param buffer non-owning view of the raw-byte buffer
+@param offset byte position where this field starts
+@param value integer value to encode
+ */
+template <typename T>
+inline void write(std::span<std::byte> buffer, std::size_t offset, T value) {
+  static_assert(std::is_integral_v<T>, "write requires an integer type");
   for (std::size_t i{0}; i < sizeof(value); i++) {
     buffer[offset + i] =
         static_cast<std::byte>(value >> ((sizeof(value) - 1 - i) * 8) & 0xFF);
@@ -24,27 +32,29 @@ inline void write_uint32(std::array<std::byte, MESSAGE_SIZE> &buffer,
 }
 
 /**
-@brief Reads a big-endian uint32_t from buffer at offset.
+@brief Reads a big-endian integer of type T from buffer at offset.
 
-@param buffer reference to the raw-byte buffer
+@param buffer non-owning view of the raw-byte buffer
 @param offset byte position where this field starts
-@returns the decoded uint32_t
+@returns the decoded value
  */
-inline std::uint32_t
-read_uint32(const std::array<std::byte, MESSAGE_SIZE> &buffer,
-            std::size_t offset) {
-  std::uint32_t output{};
-  for (std::size_t i{0}; i < sizeof(std::uint32_t); i++) {
-    auto val = std::to_integer<std::uint32_t>(buffer[offset + i]);
-    output |= val << ((sizeof(val) - 1 - i) * 8);
+template <typename T>
+inline T read(std::span<const std::byte> buffer, std::size_t offset) {
+  static_assert(std::is_integral_v<T>, "read requires an integer type");
+  T output{};
+  for (std::size_t i{0}; i < sizeof(T); i++) {
+    auto val = std::to_integer<T>(buffer[offset + i]);
+    output |= val << ((sizeof(T) - 1 - i) * 8);
   }
   return output;
 }
 
+} // namespace telemetry
+
 /**
 @brief Prints every byte of the buffer as space-separated hex on one line.
  */
-inline void print_buffer(const std::array<std::byte, MESSAGE_SIZE> &buffer) {
+inline void print_buffer(std::span<const std::byte> buffer) {
   for (std::byte b : buffer) {
     std::cout << std::hex << std::setw(2) << std::setfill('0')
               << std::to_integer<int>(b) << ' ';
