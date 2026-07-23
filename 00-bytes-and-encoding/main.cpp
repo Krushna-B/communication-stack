@@ -1,6 +1,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
@@ -69,6 +70,10 @@ int main() {
   write_uint32(buffer, 4, sequence_number);
   write_uint32(buffer, 8, static_cast<std::uint32_t>(temp));
   print_buffer(buffer);
+
+  // Stream buffer to binary file
+  std::ofstream out("telemetry.bin", std::ios::binary);
+  out.write(reinterpret_cast<const char *>(buffer.data()), buffer.size());
 
   const std::uint32_t decoded_device_id = read_uint32(buffer, 0);
 
