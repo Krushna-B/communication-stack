@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# /// script
-# dependencies = ["matplotlib"]
-# ///
-# compare_udp_tcp.py [LABEL:path.csv ...]
-# Default compares UDP max-blast vs TCP max-blast (same seq/send_ns/recv_ns schema).
-
 import csv
 import sys
 
@@ -75,9 +68,11 @@ def main() -> None:
     fig.savefig("compare_udp_tcp.png", dpi=130)
 
     for r in runs:
-        print(f"{r['label']:5} loss {r['loss_pct']:5.2f}%  "
-              f"thr {r['throughput_k']:7.1f}k msg/s  "
-              f"p50 {r['p50']:.0f}us  p99 {r['p99']:.0f}us")
+        print(
+            f"{r['label']:5} loss {r['loss_pct']:5.2f}%  "
+            f"thr {r['throughput_k']:7.1f}k msg/s  "
+            f"p50 {r['p50']:.0f}us  p99 {r['p99']:.0f}us"
+        )
     print("wrote compare_udp_tcp.png")
 
 
